@@ -1,0 +1,25 @@
+Goal: Build a complete online event registration portal using PHP (procedural style) with MySQL (via PDO or MySQLi) and Bootstrap 5+ for front-end design.Requirements:The app should have a clean, responsive registration form built with Bootstrap 5+.
+
+Fields: Full Name, Email, Phone, Organization, and optional Photo Upload.
+
+On submission:Validate inputs client-side (Bootstrap validation) and server-side (PHP).Store all registration data in a MySQL database using PDO or MySQLi (prepared statements only).After successful registration, generate a unique registration tag using TCPDF.
+
+The registration tag should contain:Event nameRegistrant’s full nameRegistration ID (auto-increment or UUID)Prompt the user to download the registration tag as a PDF immediately after registration.
+Add an Admin page protected by a simple password login where admins can:View a table of all registrantsSearch and filter by name or emailDownload individual registration tags again if needed.
+
+Folder structure suggestion:
+/event_registration/ ├── index.php # Registration form    ├── process_registration.php # Handles form submission and PDF generation    ├── admin/  │ ├── index.php # Admin login and dashboard    │ └── view_registrations.php    ├── includes/  │ ├── db_connect.php # PDO/Mysqli connection    │ ├── config.php # App settings   ├── tcpdf/ # TCPDF library    ├── uploads/ # Uploaded photos   └── tags/ # Generated registration PDFs  Include comments in the PHP files explaining key steps (database connection, PDF generation, file upload handling, etc.).Create a short README.md explaining how to:Set up the databaseConfigure db_connect.php
+
+Run the app locally (XAMPP)
+Deliverables:
+Fully working PHP appSQL script for database setupExample registration tag (PDF)Admin dashboard for record viewing
+
+“Use PDO instead of mysqli.”
+
+“Generate the PDF using TCPDF directly inside process_registration.php.
+
+#####
+    SECOND LEVEL ENHANCEMENT
+    ######
+Those who previously registered will have no need for fresh registration in consequent events, they will only be asked to remember and input their unique reg_ID and if exist, a fresh registeration tag will be downloaded for them with details of the current event.
+will need a pop up notification to display errors during registration such as "email already exist"
