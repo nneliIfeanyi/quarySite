@@ -8,7 +8,7 @@ require_once 'includes/config.php';
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Event Registration</title>
+	<title>Quarry Site Registration</title>
 	<link rel="stylesheet" href="./assets/vendor/bootstrap/css/bootstrap.min.css">
 	<link rel="stylesheet" href="./assets/css/main.css">
 	<link rel="stylesheet" href="./assets/css/animation.css">
@@ -24,7 +24,7 @@ require_once 'includes/config.php';
 	<nav class="navbar navbar-expand-lg navbar-light shadow-sm py-0">
 		<div class="container">
 			<!-- Navbar Brand - Logo -->
-			<h2 class="navbar-brand bg-success fs-3 py-4 px-3 mb-0">
+			<h2 class="navbar-brand bg-success fs-3 py-3 px-3 mb-0">
 				<a href="" class="text-white">Revival Labourers</a>
 			</h2>
 			<!-- Mobile Hambuger -->
@@ -35,10 +35,10 @@ require_once 'includes/config.php';
 			<!-- Nav Links -->
 			<div class="collapse navbar-collapse py-5 py-lg-0" id="navbarNav">
 				<ul class="navbar-nav ms-auto">
-					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fs-5 fw-semibold">
+					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fw-bold">
 						<a href="<?= URLROOT ?>" class="nav-link">HOME</a>
 					</li>
-					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fs-5 fw-semibold">
+					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fw-bold">
 						<a href="<?= URLROOT ?>/contact" class="nav-link">CONTACT</a>
 					</li>
 				</ul>
@@ -47,13 +47,16 @@ require_once 'includes/config.php';
 	</nav>
 	<!-- Main -->
 	<main class="d-flex align-items-center justify-content-center py-5">
-		<div class="container mt-5">
+		<div class="container">
 			<div class="row gy-5 justify-content-around p-3">
 				<!-- Registration Card Section -->
-				<div class="col-lg-7 col-md-10 reg-card shadow p-4 pt-5 rounded-4">
+				<div class="col-lg-7 col-md-10 reg-card shadow rounded-4">
 					<!-- Card Header -->
 					<div class="reg-card-header mb-4">
-						<h2><?= EVENT_NAME ?></h2>
+						<a href="javascript:void(0)" class="logo d-flex align-items-center">
+							<span class="sitename"><img src="./assets/img/logo.jpg" width="100" height="100" alt="site-logo"></span>
+						</a>
+						<h3 class="fst-italic"><?= EVENT_NAME ?></h3>
 						<p class="opacity-75">Please fill the form below to register.</p>
 					</div>
 					<!-- Card Body -->
@@ -171,14 +174,14 @@ require_once 'includes/config.php';
 					</div>
 				</div>
 				<!-- Dowload Existing tag Section -->
-				<div class="col-lg-4 col-md-10 download shadow p-4 pt-5 rounded-4 h-75">
-					<h2 class="mb-4">Download Existing Tag</h2>
+				<div class="col-lg-4 col-md-10 download shadow p-3 pt-3 rounded-4 h-75">
+					<h3 class="mb-4">Download Existing Tag</h3>
 					<form action="process_registration.php" method="POST" class="needs-validation pb-3" novalidate>
 						<div class="mb-5">
-							<label for="regId" class="form-label">Registration ID</label>
+							<label for="regId" class="form-label"> Enter RL-Code</label>
 							<input type="text" class="form-control" id="regId" name="reg_id_download" required>
 							<div class="invalid-feedback">
-								Please enter your Registration ID.
+								Please enter your RL-Code.
 							</div>
 						</div>
 						<button type="submit" class="next-step btn btn-success btn-lg px-5">Download Tag</button>
