@@ -1,3 +1,7 @@
+<?php
+//require_once 'includes/db_connect.php';
+require_once 'includes/config.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -32,19 +36,10 @@
 			<div class="collapse navbar-collapse py-5 py-lg-0" id="navbarNav">
 				<ul class="navbar-nav ms-auto">
 					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fs-5 fw-semibold">
-						<a href="" class="nav-link">HOME</a>
+						<a href="<?= URLROOT ?>" class="nav-link">HOME</a>
 					</li>
 					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fs-5 fw-semibold">
-						<a href="" class="nav-link">ABOUT</a>
-					</li>
-					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fs-5 fw-semibold">
-						<a href="" class="nav-link">RESOURCES</a>
-					</li>
-					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fs-5 fw-semibold">
-						<a href="" class="nav-link">EVENTS</a>
-					</li>
-					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fs-5 fw-semibold">
-						<a href="" class="nav-link">CONTACT</a>
+						<a href="<?= URLROOT ?>/contact" class="nav-link">CONTACT</a>
 					</li>
 				</ul>
 			</div>
@@ -58,13 +53,14 @@
 				<div class="col-lg-7 col-md-10 reg-card shadow p-4 pt-5 rounded-4">
 					<!-- Card Header -->
 					<div class="reg-card-header mb-4">
-						<h2>Event Registration</h2>
+						<h2><?= EVENT_NAME ?></h2>
+						<p class="opacity-75">Please fill the form below to register.</p>
 					</div>
 					<!-- Card Body -->
 					<div class="reg-card-body">
 						<!-- Form -->
 						<form action="process_registration.php" method="POST" id="register"
-							class="registration-form needs-validation">
+							class="registration-form needs-validation" data-parsley-validate>
 							<!-- Form Step 1 -->
 							<div class="form-group form-step step-1 mb-2">
 								<div class="row">
@@ -102,12 +98,12 @@
 							<div class="form-group form-step step-2 mb-2 d-none">
 								<div class="mb-3">
 									<label>Email Address</label>
-									<input type="email" name="email" data-parsley-type="email" data-parsley-trigger="keyup"
+									<input type="email" name="email" required data-parsley-type="email" data-parsley-trigger="keyup"
 										class="form-control form-control-lg">
 								</div>
 								<div class="mb-3">
 									<label>Phone Number</label>
-									<input type="number" name="phone" required data-parsley-type='number' maxlength="11"
+									<input type="text" name="phone" required data-parsley-type="digits" maxlength="11"
 										data-parsley-length="[11, 11]" data-parsley-trigger="keyup" pattern="\d{11}"
 										class=" form-control form-control-lg">
 								</div>
@@ -155,7 +151,7 @@
 								</div>
 								<div class="mb-3">
 									<label>Occupation</label>
-									<input type="text" name="work" class="form-control form-control-lg">
+									<input type="text" name="work" required class="form-control form-control-lg">
 								</div>
 								<div class="mb-3">
 									<label>Trained As&nbsp;&nbsp;<span style="font-size: x-small;">(optional)</span></label>
@@ -163,7 +159,7 @@
 								</div>
 								<div class="mb-3">
 									<label>Church Name And Address</label>
-									<input type="text" name="l_assembly" class="form-control form-control-lg">
+									<input type="text" name="l_assembly" required class="form-control form-control-lg">
 								</div>
 							</div>
 							<!-- Form Buttons -->
@@ -194,15 +190,17 @@
 
 
 	<script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/parsley.js/2.9.2/parsley.min.js"></script>
 	<script src="./assets/js/registerForm.js"></script>
 	<script>
 		// Bootstrap client-side validation
-		(function () {
+		(function() {
 			'use strict'
 			var forms = document.querySelectorAll('.needs-validation')
 			Array.prototype.slice.call(forms)
-				.forEach(function (form) {
-					form.addEventListener('submit', function (event) {
+				.forEach(function(form) {
+					form.addEventListener('submit', function(event) {
 						if (!form.checkValidity()) {
 							event.preventDefault()
 							event.stopPropagation()
@@ -213,7 +211,13 @@
 		})()
 	</script>
 	<script>
-		document.addEventListener('DOMContentLoaded', function () {
+		// Initialize Parsley on the registration form
+		$(function() {
+			$('#register').parsley();
+		});
+	</script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
 			const urlParams = new URLSearchParams(window.location.search);
 			const status = urlParams.get('status');
 			const regTag = urlParams.get('reg_tag');
@@ -250,6 +254,9 @@
 			</div>
 		</div>
 	</div>
+
+	<?php require 'includes/footer.php' ?>
+
 </body>
 
 </html>

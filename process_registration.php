@@ -1,56 +1,30 @@
 <?php
 require_once 'includes/db_connect.php';
 require_once 'includes/config.php';
-require_once 'tcpdf/tcpdf.php'; // Ensure TCPDF is loaded before MYPDF class definition
-
-// Enable error reporting for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Extend TCPDF to include custom Header and Footer
-class MYPDF extends TCPDF {
-    //Page header
-    public function Header() {
-        // Set font
-        $this->SetFont('helvetica', 'B', 16);
-        // Title
-        $this->Cell(0, 10, 'Revival Labourers', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
-        // Set font for subtitle
-        $this->SetFont('helvetica', '', 10);
-        $this->Cell(0, 7, 'Online registration tag for Quary Site 2026', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
-    }
-
-    // Page footer
-    public function Footer() {
-        $this->SetY(-15); // Position at 15 mm from bottom
-        $this->SetFont('helvetica', 'I', 8); // Set font
-        // Get current date for download date
-        $download_date = date('Y-m-d H:i:s');
-        // Cell for registration date and download date (registrant data will be passed here)
-        $this->Cell(0, 10, 'Registration Date: ' . $this->registration_date . ' | Download Date: ' . $download_date, 0, false, 'C', 0, '', 0, false, 'T', 'M');
-    }
-}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
     // Server-side validation and sanitization for new registration
-    $title = htmlspecialchars(trim($_POST['title']));
-    $surname = htmlspecialchars(trim($_POST['surname']));
-    $othernames = htmlspecialchars(trim($_POST['othernames']));
-    $gender = htmlspecialchars(trim($_POST['gender']));
-    $email = filter_var(trim($_POST['email']), FILTER_VALIDATE_EMAIL);
-    $phone = htmlspecialchars(trim($_POST['phone']));
-    $age = htmlspecialchars(trim($_POST['age']));
-    $m_status = htmlspecialchars(trim($_POST['m_status']));
-    $residence = htmlspecialchars(trim($_POST['residence']));
-    $lga = htmlspecialchars(trim($_POST['lga']));
-    $r_state = htmlspecialchars(trim($_POST['r_state']));
-    $work = htmlspecialchars(trim($_POST['work']));
-    $trainedAs = htmlspecialchars(trim($_POST['trainedAs']));
-    $l_assembly = htmlspecialchars(trim($_POST['l_assembly']));
+    $title = htmlspecialchars(trim($_POST['title'] ?? ''));
+    $surname = htmlspecialchars(trim($_POST['surname'] ?? ''));
+    $othernames = htmlspecialchars(trim($_POST['othernames'] ?? ''));
+    $gender = htmlspecialchars(trim($_POST['gender'] ?? ''));
+    $email_raw = trim($_POST['email'] ?? '');
+    $email = filter_var($email_raw, FILTER_VALIDATE_EMAIL);
+    $phone_raw = trim($_POST['phone'] ?? '');
+    // Normalize phone to digits only for server-side checks and DB storage
+    $phone = preg_replace('/\D/', '', $phone_raw);
+    $age = htmlspecialchars(trim($_POST['age'] ?? ''));
+    $m_status = htmlspecialchars(trim($_POST['m_status'] ?? ''));
+    $residence = htmlspecialchars(trim($_POST['residence'] ?? ''));
+    $lga = htmlspecialchars(trim($_POST['lga'] ?? ''));
+    $r_state = htmlspecialchars(trim($_POST['r_state'] ?? ''));
+    $work = htmlspecialchars(trim($_POST['work'] ?? ''));
+    $trainedAs = htmlspecialchars(trim($_POST['trainedAs'] ?? ''));
+    $l_assembly = htmlspecialchars(trim($_POST['l_assembly'] ?? ''));
 
     $errors = [];
 
+    // Required field checks
     if (empty($surname)) {
         $errors[] = 'Surname is required.';
     }
@@ -60,13 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
     if (empty($gender)) {
         $errors[] = 'Gender is required.';
     }
-    if (empty($email)) {
+    if (empty($email_raw)) {
         $errors[] = 'Email is required.';
     } elseif (!$email) {
         $errors[] = 'Invalid email format.';
     }
-    if (empty($phone)) {
+    if (empty($phone_raw)) {
         $errors[] = 'Phone Number is required.';
+    } elseif (!preg_match('/^\d{11}$/', $phone)) {
+        $errors[] = 'Phone number must be 11 digits.';
     }
     if (empty($age)) {
         $errors[] = 'Age Bracket is required.';
@@ -111,62 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
         // Update the registrant with the generated registration tag
         $update_stmt = $pdo->prepare("UPDATE registrants SET registration_tag = ? WHERE id = ?");
         $update_stmt->execute([$registration_tag, $registration_id]);
-
-        // TCPDF integration for generating and prompting download of the registration tag PDF
-
-        // Create new PDF document with MYPDF class
-        $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, array(100, 100), true, 'UTF-8', false);
-
-        // Set document information
-        $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('Event Registration Portal');
-        $pdf->SetTitle('Registration Tag');
-        $pdf->SetSubject('Event Registration Tag');
-
-        // Set auto page breaks
-        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-
-        // Set image scale factor
-        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-
-        // Set registrant data for footer (needs to be set before AddPage)
-        $pdf->registration_date = date('Y-m-d H:i:s'); // For new registration
-
-        // Add a page
-        $pdf->AddPage();
-
-        // Set font
-        $pdf->SetFont('helvetica', '', 12);
-
-        // Determine avatar image based on gender
-        $avatar_path = ($gender == 'Male') ? 'assets/img/male_avatar.png' : 'assets/img/female_avatar.png';
-
-        // Content
-        $full_name_for_pdf = $title . ' ' . $surname . ' ' . $othernames;
-
-        $html = "
-        <div style='text-align: center;'>
-            <table border='0' cellspacing='0' cellpadding='5'>
-                <tr>
-                    <td width='30%'><img src='.{$avatar_path}' width='50' /></td>
-                    <td width='70%'><strong>{$full_name_for_pdf}</strong></td>
-                </tr>
-                <tr>
-                    <td colspan='2'><strong>Registration Tag:</strong> {$registration_tag}</td>
-                </tr>
-            </table>
-        </div>
-        ";
-        $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-
-        // Close and output PDF document
-        $pdf_file_path = "tags/registration_" . $registration_tag . ".pdf";
-        $pdf->Output(__DIR__ . '/' . $pdf_file_path, 'F'); // Save to server
-
-        // Redirect to index.php with a success message and the registration tag
-        header("Location: index.php?status=success&reg_tag={$registration_tag}");
+        header('Location: pdf_download.php?id=' . $registration_tag);
         exit();
-
     } else {
         // Display errors
         error_log("Registration errors: " . implode(", ", $errors));
@@ -195,62 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
 
     if ($registrant) {
         // Registrant found, generate and download new PDF
-
-        // Create new PDF document with MYPDF class
-        $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, array(100, 100), true, 'UTF-8', false);
-
-        // Set document information
-        $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('Event Registration Portal');
-        $pdf->SetTitle('Registration Tag');
-        $pdf->SetSubject('Event Registration Tag');
-
-        // Set auto page breaks
-        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-
-        // Set image scale factor
-        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-
-        // Set registrant data for footer (needs to be set before AddPage)
-        $pdf->registration_date = $registrant['registration_date'];
-        
-        // Add a page
-        $pdf->AddPage();
-
-        // Set font
-        $pdf->SetFont('helvetica', '', 12);
-
-        // Determine avatar image based on gender
-        $avatar_path = ($registrant['gender'] == 'Male') ? 'assets/img/male_avatar.png' : 'assets/img/female_avatar.png';
-
-        // Content
-        $full_name_for_pdf = $registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames'];
-
-        $html = "
-        <div style='text-align: center;'>
-            <table border='0' cellspacing='0' cellpadding='5'>
-                <tr>
-                    <td width='30%'><img src='.{$avatar_path}' width='50' /></td>
-                    <td width='70%'><strong>{$full_name_for_pdf}</strong></td>
-                </tr>
-                <tr>
-                    <td colspan='2'><strong>Registration Tag:</strong> {$registrant['registration_tag']}</td>
-                </tr>
-            </table>
-        </div>
-        ";
-        $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-
-        // Close and output PDF document
-        $pdf_file_path = "tags/registration_" . $registrant['registration_tag'] . ".pdf";
-        $pdf->Output(__DIR__ . '/' . $pdf_file_path, 'F'); // Save to server
-
-        // Prompt user to download the PDF
-        header('Content-Type: application/pdf');
-        header("Content-Disposition: attachment; filename=registration_{$registrant['registration_tag']}.pdf");
-        readfile(__DIR__ . '/' . $pdf_file_path);
+        header('Location: pdf_download.php?id=' . $reg_id_to_download);
         exit();
-
     } else {
         error_log("Download error: Registration tag not found for ID: {$reg_id_to_download}");
         echo "<div class='alert alert-danger'>No registration found with the provided ID.</div>";
@@ -261,4 +129,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
     header('Location: index.php');
     exit();
 }
-?>
