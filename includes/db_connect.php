@@ -3,9 +3,9 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 // Database connection using PDO
 $host = 'localhost';
-$db   = 'event_registration_db';
-$user = 'root'; // Replace with your MySQL username
-$pass = '';     // Replace with your MySQL password
+$db   = 'revivall_quarrySite';
+$user = 'revivall_quarrySite'; // Replace with your MySQL username
+$pass = 'Avalanche@25';     // Replace with your MySQL password
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
