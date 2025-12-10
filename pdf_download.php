@@ -80,7 +80,7 @@ if (isset($_GET['id'])) {
     // Set font
     $pdf->SetFont('helvetica', '', 12);
     // output a title and some text
-    $pdf->Cell(0, 10, 'THEME: BURNING AND SHINNING LIGHT', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
+    $pdf->Cell(0, 10, 'THEME: BURNING FOR GOD', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
     // Determine avatar image based on gender and build absolute path
     $avatar_path = ($gender == 'Male') ? 'assets/img/male.png' : 'assets/img/female.png';
     $avatar_file = __DIR__ . '/' . $avatar_path;
@@ -118,7 +118,9 @@ if (isset($_GET['id'])) {
     $pdf_file_path = "tags/registration_" . $registration_tag . ".pdf";
     $pdf->Output(__DIR__ . '/' . $pdf_file_path, 'I'); // Save to server
 
-    // Redirect to index.php with a success message and the registration tag
-    header("Location: index.php?status=success&reg_tag={$registration_tag}");
+    // Stream the PDF file for download
+    header('Content-Type: application/pdf');
+    header("Content-Disposition: attachment; filename=registration_{$registration_tag}.pdf");
+    readfile(__DIR__ . '/' . $pdf_file_path);
     exit();
 }

@@ -1,6 +1,8 @@
 <?php
+session_start();
 require_once 'includes/db_connect.php';
 require_once 'includes/config.php';
+require_once 'includes/flash.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
     // Server-side validation and sanitization for new registration
@@ -87,17 +89,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
         // Update the registrant with the generated registration tag
         $update_stmt = $pdo->prepare("UPDATE registrants SET registration_tag = ? WHERE id = ?");
         $update_stmt->execute([$registration_tag, $registration_id]);
-        header('Location: pdf_download.php?id=' . $registration_tag);
+        // Redirect to index to trigger modal with registration tag
+        header('Location: index.php?status=success&reg_tag=' . $registration_tag);
+
         exit();
     } else {
-        // Display errors
-        error_log("Registration errors: " . implode(", ", $errors));
-        echo "<div class='alert alert-danger'>";
-        foreach ($errors as $error) {
-            echo "<p>{$error}</p>";
-        }
-        echo "<p><a href='index.php' class='btn btn-secondary'>Go Back</a></p>";
-        echo "</div>";
+        // Set flash messages for validation errors
+        setFlash('error', $errors);
+        header('Location: index.php');
         exit();
     }
 } else if (isset($_POST['reg_id_download']) || isset($_GET['reg_id_download'])) {
@@ -105,8 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
     $reg_id_to_download = htmlspecialchars(trim($_POST['reg_id_download'] ?? $_GET['reg_id_download']));
 
     if (empty($reg_id_to_download)) {
-        echo "<div class='alert alert-danger'>Please enter a Registration ID.</div>";
-        echo "<p><a href='index.php' class='btn btn-secondary'>Go Back</a></p>";
+        // No registration ID provided
+        setFlash('error', 'Please provide a Registration ID to download the tag.');
+        header('Location: index.php');
         exit();
     }
 
@@ -120,9 +120,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
         header('Location: pdf_download.php?id=' . $reg_id_to_download);
         exit();
     } else {
-        error_log("Download error: Registration tag not found for ID: {$reg_id_to_download}");
-        echo "<div class='alert alert-danger'>No registration found with the provided ID.</div>";
-        echo "<p><a href='index.php' class='btn btn-secondary'>Go Back</a></p>";
+        // Registrant not found
+        setFlash('error', 'No registrant found with the provided Registration ID.');
+        header('Location: index.php');
         exit();
     }
 } else {

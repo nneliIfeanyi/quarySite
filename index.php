@@ -1,6 +1,7 @@
 <?php
-//require_once 'includes/db_connect.php';
+session_start();
 require_once 'includes/config.php';
+require_once 'includes/flash.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -48,6 +49,12 @@ require_once 'includes/config.php';
 	<!-- Main -->
 	<main class="d-flex align-items-center justify-content-center py-5">
 		<div class="container">
+			<!-- Flash Messages -->
+			<div class="row justify-content-center mb-4">
+				<div class="col-lg-7 col-md-10">
+					<?php displayAllFlashes(); ?>
+				</div>
+			</div>
 			<div class="row gy-5 justify-content-around p-3">
 				<!-- Registration Card Section -->
 				<div class="col-lg-7 col-md-10 reg-card shadow rounded-4">
