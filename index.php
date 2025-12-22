@@ -42,6 +42,9 @@ require_once 'includes/flash.php';
 					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fw-bold">
 						<a href="<?= URLROOT ?>/contact" class="nav-link">CONTACT</a>
 					</li>
+					<li class="nav-item mx-lg-3 mb-3 mb-lg-0 fw-bold">
+						<a href="admin/" class="nav-link">ADMIN</a>
+					</li>
 				</ul>
 			</div>
 		</div>
@@ -71,20 +74,20 @@ require_once 'includes/flash.php';
 						<!-- Form -->
 						<form action="process_registration.php" method="POST" id="register"
 							class="registration-form needs-validation" data-parsley-validate>
-							<!-- Form Step 1 -->
-							<div class="form-group form-step step-1 mb-2">
+							<!-- Form Step 1: Personal & Contact Information -->
+							<div class="form-group form-step mb-2">
+								<!-- <h5 class="mb-4">Personal Information</h5> -->
 								<div class="row">
-									<div class="mb-3">
-										<label>Title &nbsp;<span class="opacity-75" style="font-size: x-small;">(Mr. | Mrs. |
-												etc)</span></label>
+									<div class="mb-3 col-5">
+										<label>Title <span class="opacity-75" style="font-size: x-small;">(Mr|Mrs|Bro|etc)</span></label>
 										<input type="text" name="title" class="form-control form-control-lg">
 									</div>
-									<div class="mb-3">
+									<div class="mb-3 col-7">
 										<label>Surname</label>
 										<input type="text" name="surname" required class="form-control form-control-lg">
 									</div>
 									<div class="mb-3">
-										<label>Others Names</label>
+										<label>Other Names</label>
 										<input type="text" name="othernames" required class="form-control form-control-lg">
 									</div>
 									<div class="mb-3">
@@ -103,9 +106,8 @@ require_once 'includes/flash.php';
 										</div>
 									</div>
 								</div>
-							</div>
-							<!-- Form Step 2 -->
-							<div class="form-group form-step step-2 mb-2 d-none">
+								<hr class="my-4">
+								<!-- <h5 class="mb-4">Contact & Demographics</h5> -->
 								<div class="mb-3">
 									<label>Email Address</label>
 									<input type="email" name="email" required data-parsley-type="email" data-parsley-trigger="keyup"
@@ -115,7 +117,7 @@ require_once 'includes/flash.php';
 									<label>Phone Number</label>
 									<input type="text" name="phone" required data-parsley-type="digits" maxlength="11"
 										data-parsley-length="[11, 11]" data-parsley-trigger="keyup" pattern="\d{11}"
-										class=" form-control form-control-lg">
+										class="form-control form-control-lg">
 								</div>
 								<div class="mb-3">
 									<label>Age Bracket</label>
@@ -143,8 +145,9 @@ require_once 'includes/flash.php';
 									</select>
 								</div>
 							</div>
-							<!-- Form Step 3 -->
-							<div class="form-group form-step step-1 mb-2 d-none">
+							<!-- Form Step 2: Address & Occupation Information -->
+							<div class="form-group form-step mb-2 d-none">
+								<h5 class="mb-4">Address & Occupation</h5>
 								<div class="mb-3">
 									<label>Residential Address</label>
 									<input type="text" name="residence" required class="form-control form-control-lg">

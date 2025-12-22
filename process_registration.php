@@ -65,12 +65,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
         $errors[] = 'Church Name and Address is required.';
     }
 
-    // Check if email already exists
+    // Check if phone already exists
     if (empty($errors)) {
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM registrants WHERE email = ?");
-        $stmt->execute([$email]);
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM registrants WHERE phone = ?");
+        $stmt->execute([$phone]);
         if ($stmt->fetchColumn() > 0) {
-            $errors[] = 'This email is already registered.';
+            $errors[] = 'This phone number is already registered.';
         }
     }
 
