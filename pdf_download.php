@@ -24,7 +24,7 @@ class MYPDF extends TCPDF
         $this->Cell(0, 10, 'Revival Labourers', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
         // Set font for subtitle
         $this->SetFont('helvetica', '', 10);
-        $this->Cell(0, 7, 'Online Registration Tag: Quarry Site 2026', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 7, 'Registration Tag: ' . EVENT . YEAR, 0, 1, 'C', 0, '', 0, false, 'M', 'M');
     }
 
     // Page footer
@@ -46,6 +46,7 @@ if (isset($_GET['id'])) {
     $stmt = $pdo->prepare("SELECT * FROM registrants WHERE registration_tag = ?");
     $stmt->execute([$reg_id]);
     $registrant = $stmt->fetch(PDO::FETCH_ASSOC);
+    $user_id = $registrant['id'];
     $gender = $registrant['gender'];
     $registration_tag = $registrant['registration_tag'];
     $surname = $registrant['title'] . ' ' . $registrant['surname'];
@@ -55,9 +56,9 @@ if (isset($_GET['id'])) {
 
     // Set document information
     $pdf->SetCreator(PDF_CREATOR);
-    $pdf->SetAuthor('Quarry Site Registration Portal');
+    $pdf->SetAuthor('Revival Labourers Registration Portal');
     $pdf->SetTitle('Registration Tag');
-    $pdf->SetSubject('Quarry Site Registration Tag');
+    $pdf->SetSubject(EVENT . ' Registration Tag');
 
     // Set auto page breaks
     $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
@@ -80,7 +81,7 @@ if (isset($_GET['id'])) {
     // Set font
     $pdf->SetFont('helvetica', '', 12);
     // output a title and some text
-    $pdf->Cell(0, 10, 'THEME: BURNING FOR GOD', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
+    $pdf->Cell(0, 10, 'THEME: ' . THEME, 0, 1, 'C', 0, '', 0, false, 'M', 'M');
     // Determine avatar image based on gender and build absolute path
     $avatar_path = ($gender == 'Male') ? 'assets/img/male.png' : 'assets/img/female.png';
     $avatar_file = __DIR__ . '/' . $avatar_path;
@@ -122,5 +123,17 @@ if (isset($_GET['id'])) {
     header('Content-Type: application/pdf');
     header("Content-Disposition: attachment; filename=registration_{$registration_tag}.pdf");
     readfile(__DIR__ . '/' . $pdf_file_path);
+
+    // check if exist
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM attendance WHERE reg_id = ?");
+    $stmt->execute([$reg_id]);
+    if ($stmt->fetchColumn() > 0) {
+        //$errors[] = 'This phone number is already registered.';
+        return false;
+    } else {
+        //insert New Record
+        $stmt = $pdo->prepare("INSERT INTO attendance (reg_id, event, year) VALUES (?, ?, ?)");
+        $stmt->execute([$reg_id, EVENT, YEAR]);
+    }
     exit();
 }
