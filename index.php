@@ -66,7 +66,7 @@ require_once 'includes/flash.php';
 						<a href="javascript:void(0)" class="logo d-flex align-items-center">
 							<span class="sitename"><img src="./assets/img/logo.jpg" width="100" height="100" alt="site-logo"></span>
 						</a>
-						<h3 class="fst-italic"><?= EVENT_NAME ?></h3>
+						<h3 class="fst-italic"><?= EVENT ?></h3>
 						<p class="opacity-75">Please fill the form below to register.</p>
 					</div>
 					<!-- Card Body -->
