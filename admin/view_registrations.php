@@ -10,10 +10,33 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 require_once '../includes/db_connect.php';
 require_once '../includes/config.php';
 
-// Fetch all registrants from the database
-$stmt = $pdo->prepare("SELECT * FROM registrants ORDER BY id DESC");
-$stmt->execute();
-$registrants = $stmt->fetchAll();
+// determine which dataset to display based on query parameter
+$filter = $_GET['filter'] ?? 'all';
+$registrants = [];
+$attendanceRows = [];
+$isAttendance = false;
+
+if ($filter === 'ccr') {
+    // CCR registrations: select from attendance for current year
+    $eventName = 'Christian Couples Retreat (CCR)';
+    $currentYear = date('Y');
+    $stmt = $pdo->prepare("SELECT * FROM attendance WHERE event = ? AND year = ?");
+    $stmt->execute([$eventName, $currentYear]);
+    $attendanceRows = $stmt->fetchAll();
+    $isAttendance = true;
+} elseif ($filter === 'quarrysite') {
+    $eventName = 'Quarrysite Retreat';
+    $currentYear = date('Y');
+    $stmt = $pdo->prepare("SELECT * FROM attendance WHERE event = ? AND year = ? ORDER BY id DESC");
+    $stmt->execute([$eventName, $currentYear]);
+    $registrants = $stmt->fetchAll();
+} else {
+    // currently show all registrants
+    $stmt = $pdo->prepare("SELECT * FROM registrants ORDER BY id DESC");
+    $stmt->execute();
+    $registrants = $stmt->fetchAll();
+}
+
 
 ?>
 <!DOCTYPE html>
@@ -93,43 +116,89 @@ $registrants = $stmt->fetchAll();
                     <?php unset($_SESSION['error_message']); ?>
                 <?php endif; ?>
                 <!-- end messages -->
-                <?php if (empty($registrants)): ?>
-                    <div class="alert alert-info">No registrants found.</div>
-                <?php else: ?>
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table id="registrantsTable" class="table table-hover align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Full Name</th>
-                                            <th scope="col">Phone</th>
-                                            <th scope="col">RL-Code</th>
-                                            <th scope="col" class="text-end">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php $i = 1;
-                                        foreach ($registrants as $registrant): ?>
+
+                <?php if ($isAttendance): ?>
+                    <?php if (empty($attendanceRows)): ?>
+                        <div class="alert alert-info">No CCR attendance records found.</div>
+                    <?php else: ?>
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="attendanceTable" class="table table-hover align-middle">
+                                        <thead class="table-light">
                                             <tr>
-                                                <td><?= $i++ ?></td>
-                                                <td><?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?></td>
-                                                <td><?= htmlspecialchars($registrant['phone']) ?></td>
-                                                <td><?= htmlspecialchars($registrant['registration_tag']) ?></td>
-                                                <td class="text-end">
-                                                    <div class="btn-group" role="group" aria-label="Actions">
-                                                        <a href="profile.php?id=<?= htmlspecialchars($registrant['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
-                                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($registrant['id']) ?>" data-name="<?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?>">Delete</button>
-                                                    </div>
-                                                </td>
+                                                <th scope="col">#</th>
+                                                <th scope="col">Full Name</th>
+                                                <th scope="col">Phone</th>
+                                                <th scope="col">RL-Code</th>
+                                                <th scope="col" class="text-end">Actions</th>
                                             </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            <?php $i = 1;
+                                            foreach ($attendanceRows as $row):
+                                                $stmt = $pdo->prepare("SELECT * FROM registrants WHERE registration_tag = ?  ORDER BY id DESC");
+                                                $stmt->execute([$row['reg_id']]);
+                                                $registrant = $stmt->fetch();
+                                            ?>
+                                                <tr>
+                                                    <td><?= $i++ ?></td>
+                                                    <td><?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?></td>
+                                                    <td><?= htmlspecialchars($registrant['phone']) ?></td>
+                                                    <td><?= htmlspecialchars($registrant['registration_tag']) ?></td>
+                                                    <td class="text-end">
+                                                        <div class="btn-group" role="group" aria-label="Actions">
+                                                            <a href="profile.php?id=<?= htmlspecialchars($registrant['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($registrant['id']) ?>" data-name="<?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?>">Delete</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <?php if (empty($registrants)): ?>
+                        <div class="alert alert-info">No registrants found.</div>
+                    <?php else: ?>
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="registrantsTable" class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">#</th>
+                                                <th scope="col">Full Name</th>
+                                                <th scope="col">Phone</th>
+                                                <th scope="col">RL-Code</th>
+                                                <th scope="col" class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php $i = 1;
+                                            foreach ($registrants as $registrant): ?>
+                                                <tr>
+                                                    <td><?= $i++ ?></td>
+                                                    <td><?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?></td>
+                                                    <td><?= htmlspecialchars($registrant['phone']) ?></td>
+                                                    <td><?= htmlspecialchars($registrant['registration_tag']) ?></td>
+                                                    <td class="text-end">
+                                                        <div class="btn-group" role="group" aria-label="Actions">
+                                                            <a href="profile.php?id=<?= htmlspecialchars($registrant['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($registrant['id']) ?>" data-name="<?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?>">Delete</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
 
                 <?php require_once __DIR__ . '/inc/footer.php'; ?>
@@ -167,6 +236,14 @@ $registrants = $stmt->fetchAll();
                             pageLength: 10,
                             lengthMenu: [5, 10, 25, 50, 100]
                         });
+                        // attendance table if present
+                        if ($('#attendanceTable').length) {
+                            $('#attendanceTable').DataTable({
+                                responsive: true,
+                                pageLength: 10,
+                                lengthMenu: [5, 10, 25, 50, 100]
+                            });
+                        }
 
                         // Delete modal handling
                         var confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
