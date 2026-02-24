@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = htmlspecialchars(trim($_POST['username']));
     $password = htmlspecialchars(trim($_POST['password']));
 
-    if ($username === ADMIN_USERNAME && $password === ADMIN_PASSWORD) {
+    if ($username == ADMIN_USERNAME && $password === ADMIN_PASSWORD) {
         $_SESSION['admin_logged_in'] = true;
         header('Location: view_registrations.php');
         exit();
