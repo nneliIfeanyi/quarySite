@@ -9,7 +9,7 @@ require_once 'includes/flash.php';
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Quarry Site Registration</title>
+	<title>Revival Labourers</title>
 	<link rel="stylesheet" href="./assets/vendor/bootstrap/css/bootstrap.min.css">
 	<link rel="stylesheet" href="./assets/css/main.css">
 	<link rel="stylesheet" href="./assets/css/animation.css">

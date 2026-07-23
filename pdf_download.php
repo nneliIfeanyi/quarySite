@@ -24,7 +24,7 @@ class MYPDF extends TCPDF
         $this->Cell(0, 10, 'Revival Labourers', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
         // Set font for subtitle
         $this->SetFont('helvetica', '', 10);
-        $this->Cell(0, 7, 'Registration Tag: ' . EVENT . YEAR, 0, 1, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 7, 'Reg. Tag: ' . EVENT . YEAR, 0, 1, 'C', 0, '', 0, false, 'M', 'M');
     }
 
     // Page footer
