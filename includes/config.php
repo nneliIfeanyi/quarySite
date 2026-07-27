@@ -7,3 +7,5 @@ define('URLROOT', 'https://home.revivallabourers.org.ng');
 define('EVENT', 'Youth On A Mission Congress (YOMCON)');
 define('YEAR', '2026');
 define('THEME', 'A GENERATION ON FIRE FOR GOD');
+// Event Abbreviation
+define('EVENT_ABBR', 'YOMCON');

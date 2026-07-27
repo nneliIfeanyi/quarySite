@@ -15,13 +15,14 @@ $filter = $_GET['filter'] ?? 'all';
         <nav class="nav flex-column sidebar p-3">
             <a class="nav-link" href="../index.php">New Registration</a>
             <div class="dropdown">
-                <a class="nav-link dropdown-toggle<?= in_array($filter, ['all', 'quarrysite', 'ccr']) ? ' active' : '' ?>" href="#" id="dbDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="nav-link dropdown-toggle<?= in_array($filter, ['all', 'quarrysite', 'ccr', 'yomcon']) ? ' active' : '' ?>" href="#" id="dbDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Database
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="dbDropdownMobile">
                     <li><a class="dropdown-item<?= $filter === 'all' ? ' active' : '' ?>" href="view_registrations.php?filter=all">All registrations</a></li>
-                    <!-- <li><a class="dropdown-item<?= $filter === 'quarrysite' ? ' active' : '' ?>" href="view_registrations.php?filter=quarrysite">Quarrysite registrations</a></li> -->
+                    <li><a class="dropdown-item<?= $filter === 'quarrysite' ? ' active' : '' ?>" href="view_registrations.php?filter=quarrysite">Quarrysite registrations</a></li>
                     <li><a class="dropdown-item<?= $filter === 'ccr' ? ' active' : '' ?>" href="view_registrations.php?filter=ccr">CCR registrations</a></li>
+                    <li><a class="dropdown-item<?= $filter === 'yomcon' ? ' active' : '' ?>" href="view_registrations.php?filter=yomcon">YOMCON registrations</a></li>
                 </ul>
             </div>
             <a class="nav-link" href="logout.php">Logout</a>
@@ -34,13 +35,14 @@ $filter = $_GET['filter'] ?? 'all';
     <nav class="nav flex-column">
         <a class="nav-link" href="../index.php">New Registration</a>
         <div class="dropdown">
-            <a class="nav-link dropdown-toggle<?= in_array($filter, ['all', 'quarrysite', 'ccr']) ? ' active' : '' ?>" href="#" id="dbDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle<?= in_array($filter, ['all', 'quarrysite', 'ccr', 'yomcon']) ? ' active' : '' ?>" href="#" id="dbDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Database
             </a>
             <ul class="dropdown-menu" aria-labelledby="dbDropdown">
                 <li><a class="dropdown-item<?= $filter === 'all' ? ' active' : '' ?>" href="view_registrations.php?filter=all">All registrations</a></li>
-                <!-- <li><a class="dropdown-item<?= $filter === 'quarrysite' ? ' active' : '' ?>" href="view_registrations.php?filter=quarrysite">Quarrysite registrations</a></li> -->
+                <li><a class="dropdown-item<?= $filter === 'quarrysite' ? ' active' : '' ?>" href="view_registrations.php?filter=quarrysite">Quarrysite registrations</a></li>
                 <li><a class="dropdown-item<?= $filter === 'ccr' ? ' active' : '' ?>" href="view_registrations.php?filter=ccr">CCR registrations</a></li>
+                <li><a class="dropdown-item<?= $filter === 'yomcon' ? ' active' : '' ?>" href="view_registrations.php?filter=yomcon">YOMCON registrations</a></li>
             </ul>
         </div>
         <a class="nav-link" href="logout.php">Logout</a>

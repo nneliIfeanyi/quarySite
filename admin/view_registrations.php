@@ -6,38 +6,10 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     header('Location: index.php');
     exit();
 }
-
 require_once '../includes/db_connect.php';
 require_once '../includes/config.php';
-
 // determine which dataset to display based on query parameter
 $filter = $_GET['filter'] ?? 'all';
-$registrants = [];
-$attendanceRows = [];
-$isAttendance = false;
-
-if ($filter === 'ccr') {
-    // CCR registrations: select from attendance for current year
-    $eventName = 'Christian Couples Retreat (CCR)';
-    $currentYear = date('Y');
-    $stmt = $pdo->prepare("SELECT * FROM attendance WHERE event = ? AND year = ?");
-    $stmt->execute([$eventName, $currentYear]);
-    $attendanceRows = $stmt->fetchAll();
-    $isAttendance = true;
-} elseif ($filter === 'quarrysite') {
-    $eventName = 'Quarrysite Retreat';
-    $currentYear = date('Y');
-    $stmt = $pdo->prepare("SELECT * FROM attendance WHERE event = ? AND year = ? ORDER BY id DESC");
-    $stmt->execute([$eventName, $currentYear]);
-    $registrants = $stmt->fetchAll();
-} else {
-    // currently show all registrants
-    $stmt = $pdo->prepare("SELECT * FROM registrants ORDER BY id DESC");
-    $stmt->execute();
-    $registrants = $stmt->fetchAll();
-}
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -116,147 +88,237 @@ if ($filter === 'ccr') {
                     <?php unset($_SESSION['error_message']); ?>
                 <?php endif; ?>
                 <!-- end messages -->
-
-                <?php if ($isAttendance): ?>
-                    <?php if (empty($attendanceRows)): ?>
-                        <div class="alert alert-info">No CCR attendance records found.</div>
-                    <?php else: ?>
-                        <div class="card shadow-sm">
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table id="attendanceTable" class="table table-hover align-middle">
-                                        <thead class="table-light">
+                <!-- Determine which dataset to display based on the filter -->
+                <?php if ($filter === 'ccr'):
+                    // Fetch CCR registrations
+                    $eventName = 'CCR';
+                    $stmt = $pdo->prepare("SELECT * FROM registrants WHERE event = ? ORDER BY id DESC");
+                    $stmt->execute([$eventName]);
+                    $attendanceRows = $stmt->fetchAll();
+                ?>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="attendanceTable" class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Full Name</th>
+                                            <th scope="col">Phone</th>
+                                            <th scope="col">RL-Code</th>
+                                            <th scope="col">Year</th>
+                                            <th scope="col" class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $i = 1;
+                                        foreach ($attendanceRows as $row):
+                                        ?>
                                             <tr>
-                                                <th scope="col">#</th>
-                                                <th scope="col">Full Name</th>
-                                                <th scope="col">Phone</th>
-                                                <th scope="col">RL-Code</th>
-                                                <th scope="col" class="text-end">Actions</th>
+                                                <td><?= $i++ ?></td>
+                                                <td><?= htmlspecialchars($row['title'] . ' ' . $row['surname'] . ' ' . $row['othernames']) ?></td>
+                                                <td><?= htmlspecialchars($row['phone']) ?></td>
+                                                <td><?= htmlspecialchars($row['registration_tag']) ?></td>
+                                                <td><?= htmlspecialchars($row['year']) ?></td>
+                                                <td class="text-end">
+                                                    <div class="btn-group" role="group" aria-label="Actions">
+                                                        <a href="profile.php?id=<?= htmlspecialchars($row['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($row['id']) ?>" data-name="<?= htmlspecialchars($row['title'] . ' ' . $row['surname'] . ' ' . $row['othernames']) ?>">Delete</button>
+                                                    </div>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php $i = 1;
-                                            foreach ($attendanceRows as $row):
-                                                $stmt = $pdo->prepare("SELECT * FROM registrants WHERE registration_tag = ?  ORDER BY id DESC");
-                                                $stmt->execute([$row['reg_id']]);
-                                                $registrant = $stmt->fetch();
-                                            ?>
-                                                <tr>
-                                                    <td><?= $i++ ?></td>
-                                                    <td><?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?></td>
-                                                    <td><?= htmlspecialchars($registrant['phone']) ?></td>
-                                                    <td><?= htmlspecialchars($registrant['registration_tag']) ?></td>
-                                                    <td class="text-end">
-                                                        <div class="btn-group" role="group" aria-label="Actions">
-                                                            <a href="profile.php?id=<?= htmlspecialchars($registrant['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
-                                                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($registrant['id']) ?>" data-name="<?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?>">Delete</button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <?php if (empty($registrants)): ?>
-                        <div class="alert alert-info">No registrants found.</div>
-                    <?php else: ?>
-                        <div class="card shadow-sm">
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table id="registrantsTable" class="table table-hover align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th scope="col">#</th>
-                                                <th scope="col">Full Name</th>
-                                                <th scope="col">Phone</th>
-                                                <th scope="col">RL-Code</th>
-                                                <th scope="col" class="text-end">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php $i = 1;
-                                            foreach ($registrants as $registrant): ?>
-                                                <tr>
-                                                    <td><?= $i++ ?></td>
-                                                    <td><?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?></td>
-                                                    <td><?= htmlspecialchars($registrant['phone']) ?></td>
-                                                    <td><?= htmlspecialchars($registrant['registration_tag']) ?></td>
-                                                    <td class="text-end">
-                                                        <div class="btn-group" role="group" aria-label="Actions">
-                                                            <a href="profile.php?id=<?= htmlspecialchars($registrant['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
-                                                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($registrant['id']) ?>" data-name="<?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?>">Delete</button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                <?php endif; ?>
-
-                <?php require_once __DIR__ . '/inc/footer.php'; ?>
-
-                <!-- Delete confirmation modal -->
-                <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <form method="POST" action="delete_registration.php">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="confirmDeleteLabel">Confirm Deletion</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Are you sure you want to delete <strong id="deleteRegistrantName"></strong>?</p>
-                                    <input type="hidden" name="id" id="deleteRegistrantId" value="">
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
-                                </div>
-                            </form>
                         </div>
                     </div>
-                </div>
+                <?php elseif ($filter === 'yomcon'):
+                    // Fetch YOMCON registrations 
+                    $eventName = 'YOMCON';
+                    $stmt = $pdo->prepare("SELECT * FROM registrants WHERE event = ? ORDER BY id DESC");
+                    $stmt->execute([$eventName]);
+                    $registrants = $stmt->fetchAll();
+                ?>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="registrantsTable" class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Full Name</th>
+                                            <th scope="col">Phone</th>
+                                            <th scope="col">RL-Code</th>
+                                            <th scope="col">Year</th>
+                                            <th scope="col" class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $i = 1;
+                                        foreach ($registrants as $registrant): ?>
+                                            <tr>
+                                                <td><?= $i++ ?></td>
+                                                <td><?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['phone']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['registration_tag']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['year']) ?></td>
+                                                <td class="text-end">
+                                                    <div class="btn-group" role="group" aria-label="Actions">
+                                                        <a href="profile.php?id=<?= htmlspecialchars($registrant['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($registrant['id']) ?>" data-name="<?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?>">Delete</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-                <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-                <script src="https://cdn.datatables.net/2.1.6/js/dataTables.js"></script>
-                <script src="https://cdn.datatables.net/2.1.6/js/dataTables.bootstrap5.js"></script>
-                <script>
-                    $(document).ready(function() {
-                        $('#registrantsTable').DataTable({
+                <?php elseif ($filter == 'quarrysite'):
+                    // Fetch Quarrysite registrations
+                    $eventName = 'Quarrysite';
+                    $stmt = $pdo->prepare("SELECT * FROM registrants WHERE event = ? ORDER BY id DESC");
+                    $stmt->execute([$eventName]);
+                    $registrants = $stmt->fetchAll();
+                ?>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="registrantsTable" class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Full Name</th>
+                                            <th scope="col">Phone</th>
+                                            <th scope="col">RL-Code</th>
+                                            <th scope="col">Year</th>
+                                            <th scope="col" class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $i = 1;
+                                        foreach ($registrants as $registrant): ?>
+                                            <tr>
+                                                <td><?= $i++ ?></td>
+                                                <td><?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['phone']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['registration_tag']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['year']) ?></td>
+                                                <td class="text-end">
+                                                    <div class="btn-group" role="group" aria-label="Actions">
+                                                        <a href="profile.php?id=<?= htmlspecialchars($registrant['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($registrant['id']) ?>" data-name="<?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?>">Delete</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                <?php elseif ($filter === 'all'):
+                    $stmt = $pdo->query("SELECT * FROM registrants ORDER BY id DESC");
+                    $allRegistrants = $stmt->fetchAll();
+                ?>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="registrantsTable" class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Full Name</th>
+                                            <th scope="col">Phone</th>
+                                            <th scope="col">RL-Code</th>
+                                            <th scope="col">Year</th>
+                                            <th scope="col" class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $i = 1;
+                                        foreach ($allRegistrants as $registrant): ?>
+                                            <tr>
+                                                <td><?= $i++ ?></td>
+                                                <td><?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['phone']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['registration_tag']) ?></td>
+                                                <td><?= htmlspecialchars($registrant['year']) ?></td>
+                                                <td class="text-end">
+                                                    <div class="btn-group" role="group" aria-label="Actions">
+                                                        <a href="profile.php?id=<?= htmlspecialchars($registrant['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= htmlspecialchars($registrant['id']) ?>" data-name="<?= htmlspecialchars($registrant['title'] . ' ' . $registrant['surname'] . ' ' . $registrant['othernames']) ?>">Delete</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </main>
+
+            <?php require_once __DIR__ . '/inc/footer.php'; ?>
+
+            <!-- Delete confirmation modal -->
+            <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="POST" action="delete_registration.php">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="confirmDeleteLabel">Confirm Deletion</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to delete <strong id="deleteRegistrantName"></strong>?</p>
+                                <input type="hidden" name="id" id="deleteRegistrantId" value="">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+            <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+            <script src="https://cdn.datatables.net/2.1.6/js/dataTables.js"></script>
+            <script src="https://cdn.datatables.net/2.1.6/js/dataTables.bootstrap5.js"></script>
+            <script>
+                $(document).ready(function() {
+                    $('#registrantsTable').DataTable({
+                        responsive: true,
+                        pageLength: 10,
+                        lengthMenu: [5, 10, 25, 50, 100]
+                    });
+                    // attendance table if present
+                    if ($('#attendanceTable').length) {
+                        $('#attendanceTable').DataTable({
                             responsive: true,
                             pageLength: 10,
                             lengthMenu: [5, 10, 25, 50, 100]
                         });
-                        // attendance table if present
-                        if ($('#attendanceTable').length) {
-                            $('#attendanceTable').DataTable({
-                                responsive: true,
-                                pageLength: 10,
-                                lengthMenu: [5, 10, 25, 50, 100]
-                            });
-                        }
+                    }
 
-                        // Delete modal handling
-                        var confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                    // Delete modal handling
+                    var confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
 
-                        $(document).on('click', '.btn-delete', function() {
-                            var id = $(this).data('id');
-                            var name = $(this).data('name');
-                            $('#deleteRegistrantId').val(id);
-                            $('#deleteRegistrantName').text(name);
-                            confirmDeleteModal.show();
-                        });
+                    $(document).on('click', '.btn-delete', function() {
+                        var id = $(this).data('id');
+                        var name = $(this).data('name');
+                        $('#deleteRegistrantId').val(id);
+                        $('#deleteRegistrantName').text(name);
+                        confirmDeleteModal.show();
                     });
-                </script>
+                });
+            </script>
 </body>
 
 </html>

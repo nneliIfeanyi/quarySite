@@ -76,8 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
 
     if (empty($errors)) {
         // Insert registration data into database
-        $stmt = $pdo->prepare("INSERT INTO registrants (title, surname, othernames, gender, email, phone, age, marital_status, residence, lga, state_of_residence, occupation, trained_as, church_assembly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $surname, $othernames, $gender, $email, $phone, $age, $m_status, $residence, $lga, $r_state, $work, $trainedAs, $l_assembly]);
+        $event = EVENT_ABBR; // Use the defined constant for event abbreviation
+        $year = date('Y'); // Use the current year for registration
+        $stmt = $pdo->prepare("INSERT INTO registrants (title, surname, othernames, gender, email, phone, age, marital_status, residence, lga, state_of_residence, occupation, trained_as, church_assembly, event, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $surname, $othernames, $gender, $email, $phone, $age, $m_status, $residence, $lga, $r_state, $work, $trainedAs, $l_assembly, $event, $year]);
 
         $registration_id = $pdo->lastInsertId();
 
