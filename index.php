@@ -110,12 +110,12 @@ require_once 'includes/flash.php';
 								<!-- <h5 class="mb-4">Contact & Demographics</h5> -->
 								<div class="mb-3">
 									<label>Email Address</label>
-									<input type="email" name="email" required data-parsley-type="email" data-parsley-trigger="keyup"
+									<input type="email" name="email" data-parsley-type="email" data-parsley-trigger="keyup"
 										class="form-control form-control-lg">
 								</div>
 								<div class="mb-3">
 									<label>Phone Number</label>
-									<input type="text" name="phone" required data-parsley-type="digits" maxlength="11"
+									<input type="text" name="phone" data-parsley-type="digits" maxlength="11"
 										data-parsley-length="[11, 11]" data-parsley-trigger="keyup" pattern="\d{11}"
 										class="form-control form-control-lg">
 								</div>

@@ -11,10 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
     $othernames = htmlspecialchars(trim($_POST['othernames'] ?? ''));
     $gender = htmlspecialchars(trim($_POST['gender'] ?? ''));
     $email_raw = trim($_POST['email'] ?? '');
-    $email = filter_var($email_raw, FILTER_VALIDATE_EMAIL);
+    $email = $email_raw === '' ? null : filter_var($email_raw, FILTER_VALIDATE_EMAIL);
     $phone_raw = trim($_POST['phone'] ?? '');
     // Normalize phone to digits only for server-side checks and DB storage
-    $phone = preg_replace('/\D/', '', $phone_raw);
+    $phone = $phone_raw === '' ? null : preg_replace('/\D/', '', $phone_raw);
     $age = htmlspecialchars(trim($_POST['age'] ?? ''));
     $m_status = htmlspecialchars(trim($_POST['m_status'] ?? ''));
     $residence = htmlspecialchars(trim($_POST['residence'] ?? ''));
@@ -36,14 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
     if (empty($gender)) {
         $errors[] = 'Gender is required.';
     }
-    if (empty($email_raw)) {
-        $errors[] = 'Email is required.';
-    } elseif (!$email) {
+    if ($email_raw !== '' && !$email) {
         $errors[] = 'Invalid email format.';
     }
-    if (empty($phone_raw)) {
-        $errors[] = 'Phone Number is required.';
-    } elseif (!preg_match('/^\d{11}$/', $phone)) {
+    if ($phone_raw !== '' && !preg_match('/^\d{11}$/', $phone)) {
         $errors[] = 'Phone number must be 11 digits.';
     }
     if (empty($age)) {
@@ -66,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['surname'])) {
     }
 
     // Check if phone already exists
-    if (empty($errors)) {
+    if (empty($errors) && $phone !== null) {
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM registrants WHERE phone = ?");
         $stmt->execute([$phone]);
         if ($stmt->fetchColumn() > 0) {

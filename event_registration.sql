@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS registrants (
     surname VARCHAR(255) NOT NULL,
     othernames VARCHAR(255) NOT NULL,
     gender VARCHAR(10) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NULL UNIQUE,
     phone VARCHAR(20),
     age VARCHAR(20) NOT NULL,
     marital_status VARCHAR(50) NOT NULL,
@@ -26,3 +26,6 @@ CREATE TABLE IF NOT EXISTS registrants (
     registration_tag VARCHAR(255) UNIQUE,
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Allow existing installations to omit email addresses as well
+ALTER TABLE registrants MODIFY email VARCHAR(255) NULL;
